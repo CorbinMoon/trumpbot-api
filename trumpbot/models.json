@@ -1,0 +1,98 @@
+[
+   {
+      "dataset":"../data/datasets/topics/bernie.txt",
+      "weights":"../data/weights/bernie.hdf5"
+   },
+   {
+      "dataset":"../data/datasets/topics/biden.txt",
+      "weights":"../data/weights/biden.hdf5"
+   },
+   {
+      "dataset":"../data/datasets/topics/clinton.txt",
+      "weights":"../data/weights/clinton.hdf5"
+   },
+   {
+      "dataset":"../data/datasets/topics/fox news.txt",
+      "weights":"../data/weights/fox news.hdf5"
+   },
+   {
+      "dataset":"../data/datasets/topics/iran.txt",
+      "weights":"../data/weights/iran.hdf5"
+   },
+   {
+      "dataset":"../data/datasets/topics/israel.txt",
+      "weights":"../data/weights/israel.hdf5"
+   },
+   {
+      "dataset":"../data/datasets/topics/korea.txt",
+      "weights":"../data/weights/korea.hdf5"
+   },
+   {
+      "dataset":"../data/datasets/topics/obama.txt",
+      "weights":"../data/weights/obama.hdf5"
+   },
+   {
+      "dataset":"../data/datasets/topics/russia.txt",
+      "weights":"../data/weights/russia.hdf5"
+   },
+   {
+      "dataset":"../data/datasets/topics/saudi arabia.txt",
+      "weights":"../data/weights/saudi arabia.hdf5"
+   },
+   {
+      "dataset":"../data/datasets/topics/venezuela.txt",
+      "weights":"../data/weights/venezuela.hdf5"
+   },
+   {
+      "dataset":"../data/datasets/topics/china.txt",
+      "weights":"../data/weights/china.hdf5"
+   },
+   {
+      "dataset":"../data/datasets/topics/collusion.txt",
+      "weights":"../data/weights/collusion.hdf5"
+   },
+   {
+      "dataset":"../data/datasets/topics/coronavirus.txt",
+      "weights":"../data/weights/coronavirus.hdf5"
+   },
+   {
+      "dataset":"../data/datasets/topics/democrats.txt",
+      "weights":"../data/weights/democrats.hdf5"
+   },
+   {
+      "dataset":"../data/datasets/topics/economy.txt",
+      "weights":"../data/weights/economy.hdf5"
+   },
+   {
+      "dataset":"../data/datasets/topics/election.txt",
+      "weights":"../data/weights/election.hdf5"
+   },
+   {
+      "dataset":"../data/datasets/topics/fake news.txt",
+      "weights":"../data/weights/fake news.hdf5"
+   },
+   {
+      "dataset":"../data/datasets/topics/global warming.txt",
+      "weights":"../data/weights/global warming.hdf5"
+   },
+   {
+      "dataset":"../data/datasets/topics/greetings.txt",
+      "weights":"../data/weights/greeting.hdf5"
+   },
+   {
+      "dataset":"../data/datasets/topics/insults.txt",
+      "weights":"../data/weights/insults.hdf5"
+   },
+   {
+      "dataset":"../data/datasets/topics/mexico.txt",
+      "weights":"../data/weights/mexico.hdf5"
+   },
+   {
+      "dataset":"../data/datasets/topics/socialism.txt",
+      "weights":"../data/weights/socialism.hdf5"
+   },
+   {
+      "dataset":"../data/datasets/topics/vaccines.txt",
+      "weights":"../data/weights/vaccines.hdf5"
+   }
+]
