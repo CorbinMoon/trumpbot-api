@@ -1,5 +1,4 @@
 from trumpbot.model import RNNTextClassifier, ModelLoader
-import datetime
 
 
 class Bot:
@@ -14,7 +13,4 @@ class Bot:
     def send(self, msg):
         i = self._rnn_text.predict_class(msg['text'])
         text = ' '.join(self._models[i].generate(return_as_list=True))
-        resp = dict(timestamp=datetime.datetime.now(),
-                    sender="trump",
-                    text=text)
-        return resp
+        return dict(sender="trump", text=text)

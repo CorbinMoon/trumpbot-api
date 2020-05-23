@@ -1,29 +1,21 @@
-from flask import Flask, request, jsonify, make_response
-from flask_restful import Resource, Api
-from trumpbot.bot import Bot
-import datetime
+from flask import Flask
+from flask_restful import Api
+from trumpbot.resources import Chat, SignUp
+from trumpbot.oauth2 import config_oauth
 import os
 
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////chat.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///chat.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
+config_oauth(app)
 api = Api(app)
 
-bot = Bot()
 
-
-class Chat(Resource):
-
-    def post(self):
-        msg = request.get_json()
-        msg['timestamp'] = datetime.datetime.now()
-        resp = bot.send(msg)
-
-        return make_response(jsonify(resp), 201)
-
-
+# binds resource classes to API endpoints
+api.add_resource(SignUp, '/api/v1/sign-up')
 api.add_resource(Chat, '/api/v1/chat')
 
 

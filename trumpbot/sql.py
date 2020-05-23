@@ -14,13 +14,17 @@ class User(db.Model):
     __tablename__ = 'user'
 
     id = db.Column(db.Integer, primary_key=True)
-    username = text = db.Column(db.String(50), nullable=False, unique=True)
+    username = db.Column(db.String(50), nullable=False, unique=True)
+    password = db.Column(db.String, nullable=False, unique=True)
 
     def get_user_id(self):
         return self.id
 
     def __str__(self):
         return self.username
+
+    def check_password(self, password):
+        return self.password == hash(password)
 
 
 class Chat(db.Model):
@@ -59,6 +63,14 @@ class OAuth2Token(db.Model, OAuth2TokenMixin):
     user = db.relationship('User')
 
 
+class OAuth2Client(db.Model, OAuth2ClientMixin):
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
+    user = db.relationship('User')
+
+
 class OAuth2AuthorizationCode(db.Model, OAuth2AuthorizationCodeMixin):
     __tablename__ = 'oauth2_code'
 
@@ -66,5 +78,5 @@ class OAuth2AuthorizationCode(db.Model, OAuth2AuthorizationCodeMixin):
     user_id = db.Column(
         db.Integer, db.ForeignKey('user.id', ondelete='CASCADE')
     )
-    
+
     user = db.relationship('User')
