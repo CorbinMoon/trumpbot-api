@@ -14,8 +14,7 @@ class Bot:
     def send(self, msg):
         i = self._rnn_text.predict_class(msg['text'])
         text = ' '.join(self._models[i].generate(return_as_list=True))
-        resp = dict(user_id=msg['user_id'],
-                    timestamp=datetime.datetime.now(),
+        resp = dict(timestamp=datetime.datetime.now(),
                     sender="trump",
                     text=text)
         return resp
