@@ -14,3 +14,6 @@ class Bot:
         i = self._rnn_text.predict_class(msg['text'])
         text = ' '.join(self._models[i].generate(return_as_list=True))
         return dict(sender="trump", text=text)
+
+
+bot = Bot()
