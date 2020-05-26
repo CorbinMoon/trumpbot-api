@@ -2,6 +2,7 @@ import string
 import numpy as np
 from nltk.tokenize import word_tokenize
 import json
+import hashlib
 
 
 VOCAB_PATH = './vocab.json'
@@ -44,3 +45,8 @@ def encode_text(text, vocab=None):
             data.append(vocab[word])
 
     return data
+
+
+def hash_password(password):
+    _hash = hashlib.md5(password.encode('utf-8'))
+    return _hash.hexdigest()

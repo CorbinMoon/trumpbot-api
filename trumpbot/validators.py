@@ -8,6 +8,7 @@ def validate_password(password):
         return False
     return True
 
+
 def validate_username(username):
     if username is None:
         return False

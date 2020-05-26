@@ -5,6 +5,8 @@ from authlib.flask.oauth2.sqla import (
     OAuth2TokenMixin,
     OAuth2AuthorizationCodeMixin
 )
+from trumpbot.utils import hash_password
+import time
 
 
 db = SQLAlchemy()
@@ -24,22 +26,28 @@ class User(db.Model):
         return self.username
 
     def check_password(self, password):
-        return self.password == hash(password)
+        return self.password == hash_password(password)
 
 
-class Chat(db.Model):
-    __tablename__ = 'chat'
+class Message(db.Model):
+    __tablename__ = 'message'
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(
         db.Integer, db.ForeignKey('user.id', ondelete='CASCADE')
     )
     timestamp = db.Column(
-        db.DateTime(timezone=True), server_default=func.utcnow()
+        db.DateTime(timezone=True), server_default=func.now()
     )
     text = db.Column(db.String, nullable=False)
-
+    sender = db.Column(db.String(50), nullable=False)
     user = db.relationship('User')
+
+    @property
+    def msg(self):
+        return dict(timestamp=str(self.timestamp),
+                    sender=self.sender,
+                    text=self.text)
 
 
 class Client(db.Model, OAuth2ClientMixin):
@@ -61,6 +69,12 @@ class OAuth2Token(db.Model, OAuth2TokenMixin):
     )
 
     user = db.relationship('User')
+
+    def is_refresh_token_active(self):
+        if self.revoked:
+            return False
+        expires_at = self.issued_at + self.expires_in * 2
+        return expires_at >= time.time()
 
 
 class OAuth2Client(db.Model, OAuth2ClientMixin):

@@ -66,7 +66,12 @@ authorization = AuthorizationServer(
     query_client=query_client,
     save_token=save_token,
 )
+
+
+bearer_cls = create_bearer_token_validator(db.session, OAuth2Token)
+
 require_oauth = ResourceProtector()
+require_oauth.register_token_validator(bearer_cls())
 
 
 def config_oauth(app):
@@ -84,5 +89,3 @@ def config_oauth(app):
 
     revocation_cls = create_revocation_endpoint(db.session, OAuth2Token)
     authorization.register_endpoint(revocation_cls)
-    bearer_cls = create_bearer_token_validator(db.session, OAuth2Token)
-    require_oauth.register_token_validator(bearer_cls())
