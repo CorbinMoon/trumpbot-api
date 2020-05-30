@@ -214,9 +214,6 @@ class Profile(Resource):
                 'response_types': client.client_metadata['response_types']
             })
 
-        if not user:
-            abort(401)
-
         return jsonify({
             'user_id': user.id,
             'username': user.username,
