@@ -6,14 +6,14 @@ from trumpbot.sql import User, db, Message
 from trumpbot.oauth2 import require_oauth, OAuth2Client, authorization
 from trumpbot.utils import hash_password, parse_basic_auth_header
 from werkzeug.security import gen_salt
+from werkzeug.exceptions import *
 from trumpbot.oauth2 import config_oauth
 import os
-
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///chat.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = 'trump_key'.encode('utf-8')
+app.config['SECRET_KEY'] = b'trump_key'
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 config_oauth(app)
@@ -31,7 +31,6 @@ def current_user():
 class Clients(Resource):
 
     def post(self):
-
         user = current_user()
 
         if not user:
@@ -65,17 +64,12 @@ class Token(Resource):
 
 @api.route('/api/v1/chat')
 class Chat(Resource):
-    
     method_decorators = [
         require_oauth('profile')
     ]
 
     def post(self):
         user = current_user()
-
-        if not user:
-            abort(401)
-
         msg = request.get_json()
 
         __msg = Message()
@@ -122,7 +116,7 @@ class Logout(Resource):
 
     def get(self):
         del session['id']
-        return jsonify(dict(message="Successfully logged out."))
+        return jsonify(dict(message="Logout successful."))
 
 
 @api.route('/api/v1/login')
@@ -140,14 +134,13 @@ class Login(Resource):
 
         if user.check_password(password):
             session['id'] = user.id
-            return jsonify(dict(message="Login Successful."))
+            return jsonify(dict(message="Login successful."))
 
         abort(401)
 
 
 @api.route('/api/v1/chat/<int:user_id>')
 class Messages(Resource):
-
     method_decorators = [
         require_oauth('profile')
     ]
@@ -160,7 +153,51 @@ class Messages(Resource):
         for msg in msgs:
             __msgs.append(msg.msg)
 
-        return jsonify(__msgs)
+        if not __msgs:
+            abort(404)
+
+        return __msgs
+
+    def delete(self, user_id):
+
+        user = User.query.filter_by(user_id=user_id).first()
+
+        if not user:
+            abort(404)
+
+        Message.query.filter_by(user_id=user_id).delete()
+        db.session.commit()
+
+
+################## ERROR HANDLERS ##################
+
+@app.errorhandler(404)
+def not_found(error):
+    return {'error': 'Not found.', 'message':
+        'Resource does not exist.'}, 404
+
+
+@app.errorhandler(401)
+def unauthorized(error):
+    return {'error': 'Unauthorized',
+            'message': 'Invalid credentials.'}, 401
+
+
+@app.errorhandler(403)
+def forbidden(error):
+    return {'error': 'Forbidden.'}, 403
+
+
+@app.errorhandler(409)
+def conflict(error):
+    return {'error': 'Conflict.',
+            'message': 'Conflict with current state of the server.'}, 409
+
+
+@app.errorhandler(500)
+def server_error(error):
+    return {'error': 'Internal server error',
+            'message': 'Unknown cause.'}, 500
 
 
 if __name__ == '__main__':
