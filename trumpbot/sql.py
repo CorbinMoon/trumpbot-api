@@ -6,7 +6,6 @@ from authlib.flask.oauth2.sqla import (
     OAuth2AuthorizationCodeMixin
 )
 from trumpbot.utils import hash_password
-import time
 
 
 db = SQLAlchemy()
@@ -42,12 +41,6 @@ class Message(db.Model):
     text = db.Column(db.String, nullable=False)
     sender = db.Column(db.String(50), nullable=False)
     user = db.relationship('User')
-
-    @property
-    def msg(self):
-        return dict(timestamp=str(self.timestamp),
-                    sender=self.sender,
-                    text=self.text)
 
 
 class Client(db.Model, OAuth2ClientMixin):

@@ -2,7 +2,8 @@ from trumpbot.bot import bot
 from flask import request, jsonify, make_response, abort, session
 from flask_restx import Resource, Api
 from flask import Flask
-from trumpbot.sql import User, db, Message
+from trumpbot.sql import db
+from trumpbot import sql
 from trumpbot.oauth2 import require_oauth, OAuth2Client, authorization
 from trumpbot.utils import hash_password, parse_basic_auth_header
 from werkzeug.security import gen_salt
@@ -14,6 +15,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///chat.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = b'trump_key'
+app.config['UPLOAD_FOLDER'] = '../img'
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 config_oauth(app)
@@ -23,7 +25,7 @@ api = Api(app)
 def current_user():
     if 'id' in session:
         uid = session['id']
-        return User.query.get(uid)
+        return sql.User.query.get(uid)
     return None
 
 
@@ -46,13 +48,11 @@ class Clients(Resource):
         db.session.add(client)
         db.session.commit()
 
-        client_response = {
+        return make_response(jsonify({
             "issued_at": client.issued_at,
             "client_id": client.client_id,
             "client_secret": client.client_secret
-        }
-
-        return make_response(jsonify(client_response), 201)
+        }), 201)
 
 
 @api.route('/api/v1/oauth2/token')
@@ -72,23 +72,27 @@ class Chat(Resource):
         user = current_user()
         msg = request.get_json()
 
-        __msg = Message()
+        __msg = sql.Message()
         __msg.user_id = user.id
         __msg.sender = user.username
         __msg.text = msg['text']
 
         resp = bot.send(msg)
 
-        __resp = Message()
+        __resp = sql.Message()
         __resp.user_id = user.id
-        __resp.sender = 'trump'
+        __resp.sender = 'Trump Bot'
         __resp.text = resp['text']
 
         db.session.add(__msg)
         db.session.add(__resp)
         db.session.commit()
 
-        return make_response(jsonify(__resp.msg), 201)
+        return make_response(jsonify({
+            'timestamp': __resp.timestamp,
+            'sender': __resp.sender,
+            'text': __resp.text
+        }), 201)
 
 
 @api.route('/api/v1/register')
@@ -98,15 +102,17 @@ class Register(Resource):
         basic_auth = request.headers.get('Authorization')
         username, password = parse_basic_auth_header(basic_auth)
 
-        user = User.query.filter_by(username=username).first()
+        user = sql.User.query.filter_by(username=username).first()
 
         if not user:
-            user = User(username=username,
+            user = sql.User(username=username,
                         password=hash_password(password))
             db.session.add(user)
             db.session.commit()
             session['id'] = user.id
-            return make_response(jsonify(message="New user has been created."), 201)
+            return make_response(jsonify({
+                'message': 'New user has been created.'
+            }), 201)
 
         abort(409)
 
@@ -116,7 +122,9 @@ class Logout(Resource):
 
     def get(self):
         del session['id']
-        return jsonify(dict(message="Logout successful."))
+        return jsonify({
+            'message': 'Logout successful.'
+        })
 
 
 @api.route('/api/v1/login')
@@ -127,14 +135,16 @@ class Login(Resource):
         basic_auth = request.headers.get('Authorization')
         username, password = parse_basic_auth_header(basic_auth)
 
-        user = User.query.filter_by(username=username).first()
+        user = sql.User.query.filter_by(username=username).first()
 
         if not user:
             abort(400)
 
         if user.check_password(password):
             session['id'] = user.id
-            return jsonify(dict(message="Login successful."))
+            return jsonify({
+                'message': 'Login successful.'
+            })
 
         abort(401)
 
@@ -148,10 +158,14 @@ class Messages(Resource):
     def get(self, user_id):
         __msgs = []
 
-        msgs = Message.query.filter_by(user_id=user_id).all()
+        msgs = sql.Message.query.filter_by(user_id=user_id).all()
 
         for msg in msgs:
-            __msgs.append(msg.msg)
+            __msgs.append({
+                'timestamp': msg.timestamp,
+                'sender': msg.sender,
+                'text': msg.text
+            })
 
         if not __msgs:
             abort(404)
@@ -160,21 +174,62 @@ class Messages(Resource):
 
     def delete(self, user_id):
 
-        user = User.query.filter_by(user_id=user_id).first()
+        user = sql.User.query.filter_by(user_id=user_id).first()
 
         if not user:
             abort(404)
 
-        Message.query.filter_by(user_id=user_id).delete()
+        sql.Message.query.filter_by(user_id=user_id).delete()
         db.session.commit()
 
+        return jsonify({
+            'message': 'Message history deleted.'
+        })
 
+
+@api.route('/api/v1/profile')
+class Profile(Resource):
+
+    def get(self):
+
+        __clients = []
+        user = current_user()
+
+        if not user:
+            abort(401)
+
+        clients = sql.Client.query.filter_by(user_id=user.id).all()
+
+        for client in clients:
+            __clients.append({
+                'client_id': client.client_id,
+                'issued_at': client.issued_at,
+                'expires_at': client.expires_at,
+                'client_name': client.client_name,
+                'scope': client.scope,
+                'token_endpoint_auth_method': client.client_metadata[
+                    'token_endpoint_auth_method'
+                ],
+                'grant_types': client.client_metadata['grant_types'],
+                'response_types': client.client_metadata['response_types']
+            })
+
+        if not user:
+            abort(401)
+
+        return jsonify({
+            'user_id': user.id,
+            'username': user.username,
+            'clients': __clients
+        })
+
+
+####################################################
 ################## ERROR HANDLERS ##################
 
-@app.errorhandler(404)
-def not_found(error):
-    return {'error': 'Not found.', 'message':
-        'Resource does not exist.'}, 404
+@app.errorhandler(400)
+def bad_request(error):
+    return {'error': 'Bad Request'}, 400
 
 
 @app.errorhandler(401)
@@ -185,19 +240,41 @@ def unauthorized(error):
 
 @app.errorhandler(403)
 def forbidden(error):
-    return {'error': 'Forbidden.'}, 403
+    return {'error': 'Forbidden'}, 403
+
+
+@app.errorhandler(404)
+def not_found(error):
+    return {'error': 'Not Found',
+            'message': 'Resource does not exist.'}, 404
+
+
+@app.errorhandler(405)
+def method_not_allowed(error):
+    return {'error': 'Method Not Allowed'}, 405
+
+
+@app.errorhandler(408)
+def method_not_allowed(error):
+    return {'error': 'Request Timeout',
+            'message': 'Request has exceeded the time limit.'}, 408
 
 
 @app.errorhandler(409)
 def conflict(error):
-    return {'error': 'Conflict.',
+    return {'error': 'Conflict',
             'message': 'Conflict with current state of the server.'}, 409
+
+
+@app.errorhandler(415)
+def unsupported_media_type(error):
+    return {'error': 'Unsupported Media Type'}, 415
 
 
 @app.errorhandler(500)
 def server_error(error):
-    return {'error': 'Internal server error',
-            'message': 'Unknown cause.'}, 500
+    return {'error': 'Internal Server Error',
+            'message': 'Cause is unknown.'}, 500
 
 
 if __name__ == '__main__':
