@@ -3,6 +3,7 @@ import numpy as np
 from nltk.tokenize import word_tokenize
 import json
 import hashlib
+import base64
 
 
 VOCAB_PATH = './vocab.json'
@@ -50,3 +51,12 @@ def encode_text(text, vocab=None):
 def hash_password(password):
     _hash = hashlib.md5(password.encode('utf-8'))
     return _hash.hexdigest()
+
+
+def parse_basic_auth_header(header):
+    auth_type, auth_string = header.split()
+
+    s = base64.urlsafe_b64decode(auth_string)
+    s = str(s, 'utf-8').strip()
+
+    return s.split(":")
