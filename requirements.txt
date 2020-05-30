@@ -1,5 +1,5 @@
 Flask==1.1.2
-Flask-RESTful==0.3.8
+flask-restx==0.2.0
 Keras==2.3.1
 numpy==1.18.4
 tensorflow==1.15.2
