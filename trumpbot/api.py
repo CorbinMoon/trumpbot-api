@@ -1,5 +1,5 @@
 from trumpbot.bot import bot
-from flask import request, jsonify, make_response, abort, session
+from flask import request, jsonify, make_response, abort, session, send_from_directory
 from flask_restx import Resource, Api
 from flask import Flask
 from trumpbot.sql import db
@@ -15,7 +15,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///chat.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = b'trump_key'
-app.config['UPLOAD_FOLDER'] = '../img'
+app.config['UPLOAD_FOLDER'] = '../static/img'
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 config_oauth(app)
@@ -62,7 +62,6 @@ class Token(Resource):
 
 @api.route('/api/v1/chat')
 class Chat(Resource):
-
     method_decorators = [
         require_oauth('profile')
     ]
@@ -118,7 +117,6 @@ class Register(Resource):
 
 @api.route('/api/v1/chat/<int:user_id>')
 class Messages(Resource):
-
     method_decorators = [
         require_oauth('profile')
     ]
@@ -157,7 +155,6 @@ class Messages(Resource):
 
 @api.route('/api/v1/profile')
 class Profile(Resource):
-
     method_decorators = [
         require_oauth('profile')
     ]
@@ -167,12 +164,25 @@ class Profile(Resource):
 
         return jsonify({
             'user_id': user.id,
-            'username': user.username
+            'username': user.username,
+            'image': {
+                'url': user.image,
+                'file': user.image.split('/')[-1]
+            }
         })
+
+
+@api.route('/api/v1/uploads/<string:filename>')
+class Download(Resource):
+
+    def get(self, filename):
+        return send_from_directory(app.config['UPLOAD_FOLDER'],
+                                   filename=filename)
 
 
 ####################################################
 ################## ERROR HANDLERS ##################
+####################################################
 
 @app.errorhandler(400)
 def bad_request(error):
