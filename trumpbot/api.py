@@ -74,6 +74,7 @@ class Chat(Resource):
         __msg.user_id = user.id
         __msg.sender = user.username
         __msg.text = msg['text']
+        __msg.image = user.image
 
         resp = bot.send(msg)
 
@@ -81,6 +82,7 @@ class Chat(Resource):
         __resp.user_id = user.id
         __resp.sender = 'Trump Bot'
         __resp.text = resp['text']
+        __resp.image = '/api/v1/uploads/trump.png'
 
         db.session.add(__msg)
         db.session.add(__resp)
@@ -89,7 +91,11 @@ class Chat(Resource):
         return make_response(jsonify({
             'timestamp': __resp.timestamp,
             'sender': __resp.sender,
-            'text': __resp.text
+            'text': __resp.text,
+            'image': {
+                'url': __resp.image,
+                'file': __resp.image.split("/")[-1]
+            }
         }), 201)
 
 
@@ -130,7 +136,11 @@ class Messages(Resource):
             __msgs.append({
                 'timestamp': str(msg.timestamp),
                 'sender': msg.sender,
-                'text': msg.text
+                'text': msg.text,
+                'image': {
+                    'url': msg.image,
+                    'file': msg.image.split("/")[-1]
+                }
             })
 
         if not __msgs:

@@ -42,6 +42,8 @@ class Message(db.Model):
     text = db.Column(db.String, nullable=False)
     sender = db.Column(db.String(50), nullable=False)
     user = db.relationship('User')
+    image = db.Column(db.String, unique=True)
+
 
 
 class OAuth2Token(db.Model, OAuth2TokenMixin):
