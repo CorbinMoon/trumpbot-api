@@ -11,7 +11,7 @@ def current_user():
     if 'id' in session:
         uid = session['id']
         return User.query.get(uid)
-    return redirect('/api/v1/login')
+    return None
 
 
 class Clients(Resource):
@@ -19,6 +19,10 @@ class Clients(Resource):
     def post(self):
 
         user = current_user()
+
+        if not user:
+            abort(401)
+
         client = OAuth2Client()
 
         client.client_id = gen_salt(24)
@@ -52,6 +56,9 @@ class Chat(Resource):
 
     def post(self):
         user = current_user()
+
+        if not user:
+            abort(401)
 
         msg = request.get_json()
 
