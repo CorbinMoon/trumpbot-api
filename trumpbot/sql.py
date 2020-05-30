@@ -17,7 +17,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), nullable=False, unique=True)
     password = db.Column(db.String, nullable=False, unique=True)
-    image = db.Column(db.String, default='/api/v1/uploads/default.png', unique=True)
+    image = db.Column(db.String, default='/uploads/default.png', unique=True)
 
     def get_user_id(self):
         return self.id
@@ -42,7 +42,6 @@ class Message(db.Model):
     text = db.Column(db.String, nullable=False)
     sender = db.Column(db.String(50), nullable=False)
     user = db.relationship('User')
-    image = db.Column(db.String, unique=True)
 
 
 

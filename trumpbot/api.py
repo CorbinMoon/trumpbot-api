@@ -7,6 +7,7 @@ from trumpbot import sql
 from trumpbot.oauth2 import require_oauth, OAuth2Client, authorization
 from trumpbot.utils import hash_password
 from werkzeug.security import gen_salt
+from werkzeug.utils import secure_filename
 from werkzeug.exceptions import *
 from trumpbot.oauth2 import config_oauth
 import os
@@ -29,7 +30,7 @@ def current_user():
     return None
 
 
-@api.route('/api/v1/clients')
+@api.route('/clients')
 class Clients(Resource):
 
     def post(self):
@@ -49,7 +50,7 @@ class Clients(Resource):
         }), 201)
 
 
-@api.route('/api/v1/oauth2/token')
+@api.route('/oauth2/token')
 class Token(Resource):
 
     def post(self):
@@ -60,7 +61,7 @@ class Token(Resource):
         return authorization.create_token_response(request)
 
 
-@api.route('/api/v1/chat')
+@api.route('/chat')
 class Chat(Resource):
     method_decorators = [
         require_oauth('profile')
@@ -74,7 +75,6 @@ class Chat(Resource):
         __msg.user_id = user.id
         __msg.sender = user.username
         __msg.text = msg['text']
-        __msg.image = user.image
 
         resp = bot.send(msg)
 
@@ -82,7 +82,6 @@ class Chat(Resource):
         __resp.user_id = user.id
         __resp.sender = 'Trump Bot'
         __resp.text = resp['text']
-        __resp.image = '/api/v1/uploads/trump.png'
 
         db.session.add(__msg)
         db.session.add(__resp)
@@ -91,15 +90,11 @@ class Chat(Resource):
         return make_response(jsonify({
             'timestamp': __resp.timestamp,
             'sender': __resp.sender,
-            'text': __resp.text,
-            'image': {
-                'url': __resp.image,
-                'file': __resp.image.split("/")[-1]
-            }
+            'text': __resp.text
         }), 201)
 
 
-@api.route('/api/v1/register')
+@api.route('/register')
 class Register(Resource):
 
     def post(self):
@@ -121,7 +116,7 @@ class Register(Resource):
         abort(409)
 
 
-@api.route('/api/v1/chat/<int:user_id>')
+@api.route('/chat/<int:user_id>')
 class Messages(Resource):
     method_decorators = [
         require_oauth('profile')
@@ -136,11 +131,7 @@ class Messages(Resource):
             __msgs.append({
                 'timestamp': str(msg.timestamp),
                 'sender': msg.sender,
-                'text': msg.text,
-                'image': {
-                    'url': msg.image,
-                    'file': msg.image.split("/")[-1]
-                }
+                'text': msg.text
             })
 
         if not __msgs:
@@ -163,7 +154,7 @@ class Messages(Resource):
         })
 
 
-@api.route('/api/v1/profile')
+@api.route('/profile')
 class Profile(Resource):
     method_decorators = [
         require_oauth('profile')
@@ -182,12 +173,40 @@ class Profile(Resource):
         })
 
 
-@api.route('/api/v1/uploads/<string:filename>')
+@api.route('/uploads/<string:filename>')
 class Download(Resource):
 
     def get(self, filename):
         return send_from_directory(app.config['UPLOAD_FOLDER'],
                                    filename=filename)
+
+
+@api.route('/uploads')
+class Upload(Resource):
+    method_decorators = [
+        require_oauth('profile')
+    ]
+
+    def post(self):
+
+        user = current_user()
+
+        if 'file' not in request.files:
+            abort(400)
+
+        file = request.files['file']
+
+        if not file.filename:
+            abort(400)
+
+        filename = secure_filename(file.filename)
+        file.save(app.config['UPLOAD_FOLDER'], filename)
+
+        user.image = '/uploads/{}'.format(filename)
+        db.session.commit(user)
+
+        return make_response(jsonify({
+            'message': 'Upload successful.'}), 201)
 
 
 ####################################################
