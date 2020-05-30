@@ -5,7 +5,7 @@ from flask import Flask
 from trumpbot.sql import db
 from trumpbot import sql
 from trumpbot.oauth2 import require_oauth, OAuth2Client, authorization
-from trumpbot.utils import hash_password, parse_basic_auth_header
+from trumpbot.utils import hash_password
 from werkzeug.security import gen_salt
 from werkzeug.exceptions import *
 from trumpbot.oauth2 import config_oauth
@@ -33,16 +33,10 @@ def current_user():
 class Clients(Resource):
 
     def post(self):
-        user = current_user()
-
-        if not user:
-            abort(401)
-
         client = OAuth2Client()
 
         client.client_id = gen_salt(24)
         client.client_secret = gen_salt(48)
-        client.user_id = user.id
         client.client_metadata = request.get_json()
 
         db.session.add(client)
@@ -59,11 +53,16 @@ class Clients(Resource):
 class Token(Resource):
 
     def post(self):
+        user_name = request.form['username']
+        user = sql.User.query.filter_by(username=user_name).first()
+        session['id'] = user.id
+
         return authorization.create_token_response(request)
 
 
 @api.route('/api/v1/chat')
 class Chat(Resource):
+
     method_decorators = [
         require_oauth('profile')
     ]
@@ -99,14 +98,14 @@ class Chat(Resource):
 class Register(Resource):
 
     def post(self):
-        basic_auth = request.headers.get('Authorization')
-        username, password = parse_basic_auth_header(basic_auth)
+        username = request.form['username']
+        password = request.form['password']
 
         user = sql.User.query.filter_by(username=username).first()
 
         if not user:
             user = sql.User(username=username,
-                        password=hash_password(password))
+                            password=hash_password(password))
             db.session.add(user)
             db.session.commit()
             session['id'] = user.id
@@ -117,40 +116,9 @@ class Register(Resource):
         abort(409)
 
 
-@api.route('/api/v1/logout')
-class Logout(Resource):
-
-    def get(self):
-        del session['id']
-        return jsonify({
-            'message': 'Logout successful.'
-        })
-
-
-@api.route('/api/v1/login')
-class Login(Resource):
-
-    def post(self):
-
-        basic_auth = request.headers.get('Authorization')
-        username, password = parse_basic_auth_header(basic_auth)
-
-        user = sql.User.query.filter_by(username=username).first()
-
-        if not user:
-            abort(400)
-
-        if user.check_password(password):
-            session['id'] = user.id
-            return jsonify({
-                'message': 'Login successful.'
-            })
-
-        abort(401)
-
-
 @api.route('/api/v1/chat/<int:user_id>')
 class Messages(Resource):
+
     method_decorators = [
         require_oauth('profile')
     ]
@@ -162,7 +130,7 @@ class Messages(Resource):
 
         for msg in msgs:
             __msgs.append({
-                'timestamp': msg.timestamp,
+                'timestamp': str(msg.timestamp),
                 'sender': msg.sender,
                 'text': msg.text
             })
@@ -174,7 +142,7 @@ class Messages(Resource):
 
     def delete(self, user_id):
 
-        user = sql.User.query.filter_by(user_id=user_id).first()
+        user = sql.User.query.get(user_id)
 
         if not user:
             abort(404)
@@ -190,34 +158,16 @@ class Messages(Resource):
 @api.route('/api/v1/profile')
 class Profile(Resource):
 
+    method_decorators = [
+        require_oauth('profile')
+    ]
+
     def get(self):
-
-        __clients = []
         user = current_user()
-
-        if not user:
-            abort(401)
-
-        clients = sql.Client.query.filter_by(user_id=user.id).all()
-
-        for client in clients:
-            __clients.append({
-                'client_id': client.client_id,
-                'issued_at': client.issued_at,
-                'expires_at': client.expires_at,
-                'client_name': client.client_name,
-                'scope': client.scope,
-                'token_endpoint_auth_method': client.client_metadata[
-                    'token_endpoint_auth_method'
-                ],
-                'grant_types': client.client_metadata['grant_types'],
-                'response_types': client.client_metadata['response_types']
-            })
 
         return jsonify({
             'user_id': user.id,
-            'username': user.username,
-            'clients': __clients
+            'username': user.username
         })
 
 
