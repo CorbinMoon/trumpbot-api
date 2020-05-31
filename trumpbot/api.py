@@ -200,6 +200,7 @@ class Upload(Resource):
             abort(400)
 
         filename = secure_filename(file.filename)
+        print(filename)
         file.save(app.config['UPLOAD_FOLDER'], filename)
 
         user.image = '/uploads/{}'.format(filename)
