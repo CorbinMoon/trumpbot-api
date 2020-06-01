@@ -99,12 +99,14 @@ class Register(Resource):
 
     def post(self):
         username = request.form['username']
+        email = request.form['email']
         password = request.form['password']
 
         user = sql.User.query.filter_by(username=username).first()
 
         if not user:
             user = sql.User(username=username,
+                            email=email,
                             password=hash_password(password))
             db.session.add(user)
             db.session.commit()
@@ -195,15 +197,9 @@ class Upload(Resource):
             abort(400)
 
         file = request.files['file']
+        file.save(secure_filename(file.filename))
 
-        if not file.filename:
-            abort(400)
-
-        filename = secure_filename(file.filename)
-        print(filename)
-        file.save(app.config['UPLOAD_FOLDER'], filename)
-
-        user.image = '/uploads/{}'.format(filename)
+        user.image = '../static/img/{}'.format(file.filename)
         db.session.commit(user)
 
         return make_response(jsonify({

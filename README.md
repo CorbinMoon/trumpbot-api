@@ -42,7 +42,7 @@ The response will be the `client_id`, `client_secret` and the date issued:
 ```
 End users can then create an account:
 ```shell script
-$ curl -X POST -F username=some-username -F password=some=password http://localhost:5000/register -i -v
+$ curl -X POST -F username=some-username -F email=some@email.com -F password=some=password http://localhost:5000/register -i -v
 ```
 Once the end user has created an account, they will need an access token. `client_id` and `client_secret` should be provided by the application as a base64 encoded header:
 ```shell script
