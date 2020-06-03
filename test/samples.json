@@ -1,0 +1,24 @@
+{
+  "/clients": {
+    "client_name": "test app",
+    "grant_types": [
+      "password"
+    ],
+    "response_types": [
+      "code"
+    ],
+    "scope": "profile",
+    "token_endpoint_auth_method": "client_secret_basic"
+  },
+  "/register": {
+    "username": "test",
+    "password": "test",
+    "email": "foo@test.com"
+  },
+  "/oauth2/token": {
+    "username": "test",
+    "password": "test",
+    "scope": "profile",
+    "grant_type": "password"
+  }
+}

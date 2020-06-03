@@ -12,11 +12,14 @@ from werkzeug.exceptions import *
 from trumpbot.oauth2 import config_oauth
 import os
 
+
+UPLOADS_DIR = '../static/img'
+
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///chat.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = b'trump_key'
-app.config['UPLOAD_FOLDER'] = '../static/img'
+app.config['UPLOAD_FOLDER'] = UPLOADS_DIR
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 config_oauth(app)
@@ -131,7 +134,7 @@ class Messages(Resource):
 
         for msg in msgs:
             __msgs.append({
-                'timestamp': str(msg.timestamp),
+                'timestamp': msg.timestamp.utcnow(),
                 'sender': msg.sender,
                 'text': msg.text
             })
@@ -142,11 +145,6 @@ class Messages(Resource):
         return __msgs
 
     def delete(self, user_id):
-
-        user = sql.User.query.get(user_id)
-
-        if not user:
-            abort(404)
 
         sql.Message.query.filter_by(user_id=user_id).delete()
         db.session.commit()
@@ -168,6 +166,7 @@ class Profile(Resource):
         return jsonify({
             'user_id': user.id,
             'username': user.username,
+            'email': user.email,
             'image': {
                 'url': user.image,
                 'file': user.image.split('/')[-1]
@@ -179,7 +178,7 @@ class Profile(Resource):
 class Download(Resource):
 
     def get(self, filename):
-        return send_from_directory(app.config['UPLOAD_FOLDER'],
+        return send_from_directory(UPLOADS_DIR,
                                    filename=filename)
 
 
@@ -193,13 +192,10 @@ class Upload(Resource):
 
         user = current_user()
 
-        if 'file' not in request.files:
-            abort(400)
-
         file = request.files['file']
-        file.save(secure_filename(file.filename))
+        file.save(UPLOADS_DIR, secure_filename(file.filename))
 
-        user.image = '../static/img/{}'.format(file.filename)
+        user.image = UPLOADS_DIR + '/' + file.filename
         db.session.commit(user)
 
         return make_response(jsonify({
