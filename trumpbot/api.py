@@ -57,9 +57,12 @@ class Clients(Resource):
 class Token(Resource):
 
     def post(self):
-        user_name = request.form['username']
-        user = sql.User.query.filter_by(username=user_name).first()
-        session['id'] = user.id
+        user = current_user()
+
+        if not user:
+            username = request.form['username']
+            user = sql.User.query.filter_by(username=username).first()
+            session['id'] = user.id
 
         return authorization.create_token_response(request)
 
