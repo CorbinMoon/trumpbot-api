@@ -1,5 +1,5 @@
 from trumpbot.bot import bot
-from flask import request, jsonify, make_response, abort, session, send_from_directory
+from flask import request, jsonify, make_response, abort, session
 from flask_restx import Resource, Api
 from flask import Flask
 from trumpbot.sql import db
@@ -7,7 +7,6 @@ from trumpbot import sql
 from trumpbot.oauth2 import require_oauth, OAuth2Client, authorization
 from trumpbot.utils import hash_password
 from werkzeug.security import gen_salt
-from werkzeug.utils import secure_filename
 from werkzeug.exceptions import *
 from trumpbot.oauth2 import config_oauth
 import os
@@ -169,40 +168,8 @@ class Profile(Resource):
         return jsonify({
             'user_id': user.id,
             'username': user.username,
-            'email': user.email,
-            'image': {
-                'url': user.image,
-                'file': user.image.split('/')[-1]
-            }
+            'email': user.email
         })
-
-
-@api.route('/uploads/<string:filename>')
-class Download(Resource):
-
-    def get(self, filename):
-        return send_from_directory(UPLOADS_DIR,
-                                   filename=filename)
-
-
-@api.route('/uploads')
-class Upload(Resource):
-    method_decorators = [
-        require_oauth('profile')
-    ]
-
-    def post(self):
-
-        user = current_user()
-
-        file = request.files['file']
-        file.save(UPLOADS_DIR, secure_filename(file.filename))
-
-        user.image = UPLOADS_DIR + '/' + file.filename
-        db.session.commit(user)
-
-        return make_response(jsonify({
-            'message': 'Upload successful.'}), 201)
 
 
 ####################################################
