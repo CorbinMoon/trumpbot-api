@@ -3,7 +3,7 @@ from trumpbot.model import RNNTextClassifier, ModelLoader
 
 class Bot:
 
-    MODEL_WEIGHTS = '../data/weights/topics.hdf5'
+    MODEL_WEIGHTS = './data/weights/topics.hdf5'
 
     def __init__(self):
         self._models = ModelLoader.load_models()
