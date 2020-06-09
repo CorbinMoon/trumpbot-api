@@ -6,4 +6,4 @@ RUN pip install -r requirements.txt
 # RUN python -m unittest discover -s test
 EXPOSE 5000
 ENTRYPOINT ["python"]
-CMD ["./trumpbot/api.py"]
+CMD ["api.py"]

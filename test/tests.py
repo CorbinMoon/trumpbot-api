@@ -1,4 +1,4 @@
-from trumpbot.api import app
+from api import app
 from trumpbot.sql import db
 import json
 import unittest

@@ -141,9 +141,6 @@ class Messages(Resource):
                 'text': msg.text
             })
 
-        if not __msgs:
-            abort(404)
-
         return __msgs
 
     def delete(self, user_id):
