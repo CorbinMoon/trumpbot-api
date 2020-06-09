@@ -8,8 +8,8 @@ services:
 
 before_install:
   - docker build -t corbinmoon/trumpbot-api .
-  - docker run -d -p 5000:5000 corbinmoon/trumpbot-api
+  - docker run -d -p 80:80 corbinmoon/trumpbot-api
 script:
   - docker login -u $USERNAME -p $PASSWORD
-  - docker tag corbinmoon/trumpbot-api corbinmoon/trumpbot-api:0.0.7
-  - docker push corbinmoon/trumpbot-api:0.0.7
+  - docker tag corbinmoon/trumpbot-api corbinmoon/trumpbot-api:0.0.8
+  - docker push corbinmoon/trumpbot-api:0.0.8
