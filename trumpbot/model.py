@@ -8,8 +8,8 @@ import json
 import pandas as pd
 
 
-TOPICS_PATH = './models.json'
-YML_MODEL_PATH = '../data/conf/topics_model.yaml'
+TOPICS_PATH = './trumpbot/models.json'
+YML_MODEL_PATH = './data/conf/topics_model.yaml'
 
 
 class ModelLoader(textgenrnn):
