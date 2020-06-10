@@ -41,13 +41,13 @@ The response will be the `client_id`, `client_secret` and the date issued:
 ```
 End users can then create an account:
 ```shell script
-$ curl -X POST -F username=some-username -F email=some@email.com -F password=some=password http://localhost:5000/register -i -v
+$ curl -X POST -F username=some-username -F email=some@email.com -F password=some=password http://localhost:5000/signup -i -v
 ```
 Once the end user has created an account, they will need an access token. `client_id` and `client_secret` should be provided by the application as a base64 encoded header:
 ```shell script
 $ curl -X POST -F username=some-username -F password=some-password -F grant_type=password -F scope=profile \
     -H "Authorization: Basic MkVHU2hlWjBMSjhTYzRtVVl3WXZwa3dVOlIxc09GNXp2d2hoRXBGUlBNZEpHR2VyTU03eTE0aEtaOEVYS2xjSEw3d0owZXFnYQ==" \
-    http://localhost:5000/oauth2/token -i -v
+    http://localhost:5000/oauth/token -i -v
 ```
 An access token of type `Bearer` will then be issued to the end user:
 ```json

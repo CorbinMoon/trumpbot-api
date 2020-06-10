@@ -12,13 +12,10 @@ from trumpbot.oauth2 import config_oauth
 import os
 
 
-UPLOADS_DIR = '../static/img'
-
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///chat.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = b'trump_key'
-app.config['UPLOAD_FOLDER'] = UPLOADS_DIR
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 config_oauth(app)
@@ -52,7 +49,7 @@ class Clients(Resource):
         }), 201)
 
 
-@api.route('/oauth2/token')
+@api.route('/oauth/token')
 class Token(Resource):
 
     def post(self):
@@ -99,7 +96,7 @@ class Chat(Resource):
         }), 201)
 
 
-@api.route('/register')
+@api.route('/signup')
 class Register(Resource):
 
     def post(self):
@@ -123,7 +120,7 @@ class Register(Resource):
         abort(409)
 
 
-@api.route('/chat/<int:user_id>')
+@api.route('/chat/users/<int:user_id>/messages')
 class Messages(Resource):
     method_decorators = [
         require_oauth('profile')
@@ -153,74 +150,23 @@ class Messages(Resource):
         })
 
 
-@api.route('/profile')
+@api.route('/profile/<int:user_id>')
 class Profile(Resource):
     method_decorators = [
         require_oauth('profile')
     ]
 
-    def get(self):
-        user = current_user()
+    def get(self, user_id):
+        user = sql.User.query.filter_by(user_id=user_id).all()
+
+        if not user:
+            abort(404)
 
         return jsonify({
             'user_id': user.id,
             'username': user.username,
             'email': user.email
         })
-
-
-####################################################
-################## ERROR HANDLERS ##################
-####################################################
-
-@app.errorhandler(400)
-def bad_request(error):
-    return {'error': 'Bad Request'}, 400
-
-
-@app.errorhandler(401)
-def unauthorized(error):
-    return {'error': 'Unauthorized',
-            'message': 'Invalid credentials.'}, 401
-
-
-@app.errorhandler(403)
-def forbidden(error):
-    return {'error': 'Forbidden'}, 403
-
-
-@app.errorhandler(404)
-def not_found(error):
-    return {'error': 'Not Found',
-            'message': 'Resource does not exist.'}, 404
-
-
-@app.errorhandler(405)
-def method_not_allowed(error):
-    return {'error': 'Method Not Allowed'}, 405
-
-
-@app.errorhandler(408)
-def method_not_allowed(error):
-    return {'error': 'Request Timeout',
-            'message': 'Request has exceeded the time limit.'}, 408
-
-
-@app.errorhandler(409)
-def conflict(error):
-    return {'error': 'Conflict',
-            'message': 'Conflict with current state of the server.'}, 409
-
-
-@app.errorhandler(415)
-def unsupported_media_type(error):
-    return {'error': 'Unsupported Media Type'}, 415
-
-
-@app.errorhandler(500)
-def server_error(error):
-    return {'error': 'Internal Server Error',
-            'message': 'Cause is unknown.'}, 500
 
 
 if __name__ == '__main__':
