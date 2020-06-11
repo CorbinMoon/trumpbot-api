@@ -16,7 +16,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///chat.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = b'trump_key'
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+os.environ['AUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 config_oauth(app)
 api = Api(app)
