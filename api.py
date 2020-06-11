@@ -120,7 +120,7 @@ class Register(Resource):
         abort(409)
 
 
-@api.route('/chat/users/<int:user_id>/messages')
+@api.route('/chat/<int:user_id>')
 class Messages(Resource):
     method_decorators = [
         require_oauth('profile')

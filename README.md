@@ -20,7 +20,7 @@ The flow diagram below visually illustrates the basic architecture of this Api:
 
 ```shell script
 $ docker pull corbinmoon/trumpbot-api
-$ docker run -p 5000:5000 corbinmoon/trumpbot-api
+$ docker run -p 80:80 corbinmoon/trumpbot-api
 ```
 
 ### Examples
