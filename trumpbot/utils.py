@@ -6,7 +6,7 @@ import hashlib
 import base64
 
 
-VOCAB_PATH = './vocab.json'
+VOCAB_PATH = './trumpbot/vocab.json'
 
 
 def vectorize(seqs, dim=10000):
