@@ -5,4 +5,4 @@ RUN pip install -r requirements.txt
 # run unit tests
 # RUN python -m unittest discover -s test
 EXPOSE 5000
-ENTRYPOINT ["python",  "api.py"]
+ENTRYPOINT ["python", "./api.py"]
