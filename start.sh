@@ -1,4 +1,4 @@
 #!/bin/bash
-app="app"
+app="api"
 export FLASK_APP=${app}
 flask run
