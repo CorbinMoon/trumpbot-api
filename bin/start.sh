@@ -1,4 +1,4 @@
 #!/bin/bash
-app="api"
+app="api.py"
 export FLASK_APP=${app}
-nohup flask run
+python -m flask run --host=0.0.0.0
