@@ -11,5 +11,5 @@ before_install:
   - docker run -d -p 80:80 corbinmoon/trumpbot-api
 script:
   - docker login -u $USERNAME -p $PASSWORD
-  - docker tag corbinmoon/trumpbot-api corbinmoon/trumpbot-api:0.1.1
-  - docker push corbinmoon/trumpbot-api:0.1.1
+  - docker tag corbinmoon/trumpbot-api corbinmoon/trumpbot-api:0.1.2
+  - docker push corbinmoon/trumpbot-api:0.1.2
