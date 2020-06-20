@@ -1,9 +1,9 @@
 #!/bin/bash
 
 #bazel installation
-wget https://github.com/bazelbuild/bazel/releases/download/2.2.0/bazel-2.2.0-installer-linux-x86_64.sh
-chmod +x bazel-2.2.0-installer-linux-x86_64.sh
-./bazel-2.2.0-installer-linux-x86_64.sh
+wget https://github.com/bazelbuild/bazel/releases/download/3.1.0/bazel-3.1.0-installer-linux-x86_64.sh
+chmod +x bazel-3.1.0-installer-linux-x86_64.sh
+./bazel-3.1.0-installer-linux-x86_64.sh
 
 # get tensorflow sources
 git clone https://github.com/tensorflow/tensorflow.git
