@@ -7,4 +7,4 @@ pandas==0.25.3
 nltk==3.4.5
 Flask-SQLAlchemy==2.4.1
 authlib==0.14.3
-tensorflow==1.15.2
+tensorflow==2.3.1
