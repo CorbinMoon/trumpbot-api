@@ -11,11 +11,6 @@ This Api includes the following:
 The flow diagram below visually illustrates the basic architecture of this Api:
 ![alt text](api-flow-diagram.png)
 
-##### TODOs:
-- fix custom error handler
-- add unit/integration tests
-- add automated deployment of docker container to hosting site
-
 ### Installation
 
 ```shell script
